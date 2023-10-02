@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "stack.h": "c",
+        "stdio.h": "c",
+        "result.h": "c"
+    }
+}

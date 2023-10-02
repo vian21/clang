@@ -1,22 +1,28 @@
+#include <stdio.h>
 #include "stack.h"
+#include "Result.h"
 
-int array[MAX_SIZE];
-int top;
+static Stack stack;
+static int top = -1;
 
-int push(int value){
-    printf("Top%d\n", top);
-    if(top == MAX_SIZE -1) return 0;
+int push(int value)
+{
+    if (top == MAX_SIZE - 1)
+        return 0;
 
-    array[++top] = value;
+    stack.storage[++top] = value;
     return 1;
 }
 
-int pop(){
-    if(is_empty()) return -1;
+Result pop()
+{
+    if (is_empty())
+        return Err("Empty stack");
 
-    return array[top--];
+    return Ok(stack.storage[top--]);
 }
 
-int is_empty(){
+int is_empty()
+{
     return top == -1;
 }
