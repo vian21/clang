@@ -2,27 +2,38 @@
 #include "stack.h"
 #include "Result.h"
 
-static Stack stack;
-static int top = -1;
-
-int push(int value)
+Stack createStack(Datatype type)
 {
-    if (top == MAX_SIZE - 1)
+    int storage[MAX_SIZE];
+
+    return (Stack){
+        .type = type,
+        .top = -1,
+        .storage = (void *)storage};
+}
+
+int push(Stack *s, int value)
+{
+    if (s->top == MAX_SIZE - 1)
         return 0;
 
-    stack.storage[++top] = value;
+    int *nextSpot = (int *)(s->storage) + ++(s->top);
+    *nextSpot = value;
+
     return 1;
 }
 
-Result pop()
+Result pop(Stack *s)
 {
-    if (is_empty())
+    if (is_empty(s))
         return Err("Empty stack");
 
-    return Ok(stack.storage[top--]);
+    int value = *((int *)(s->storage) + s->top--);
+
+    return Ok(value);
 }
 
-int is_empty()
+int is_empty(Stack *s)
 {
-    return top == -1;
+    return (*s).top == -1;
 }

@@ -3,30 +3,30 @@
 
 int main(void)
 {
+    Stack stack = createStack(INTERGER);
 
     for (int i = 0; i < 10; i++)
     {
         printf("%d ", i);
-        push(i);
+        push(&stack, i);
     }
 
     printf("\n");
 
-    while (!is_empty())
+    while (!is_empty(&stack))
     {
-        Result value = pop();
+        Result value = pop(&stack);
 
         if (value.is_ok)
+        {
             printf("%d ", value.value);
+        }
     }
 
     printf("\n");
-
-    push(19);
-    pop();
-    Result r = pop();
-    printf("%s\n", r.error);
-    printf("\nis_empty: %s\n ", is_empty() ? "true" : "false");
+    pop(&stack);
+    pop(&stack);
+    printf("\nis_empty: %s\n ", is_empty(&stack) ? "true" : "false");
 
     return 0;
 }

@@ -174,6 +174,7 @@ max(i++, j++);
 - Including a header file in multiple files means that it will be copied multiple time. If the headre file contains fucntion definitions, these definitions will class. but declarations dont.
 - You can includ the function definition by making the function `static inline` i.e the function will be copied to the file where it is used and will be scoped to that file only hence removing clashes
 - one downside is it make the program bigger since the function is define multiple time(extra code)
+
 ### Conditionals
 
 - and -> `&&`
@@ -414,6 +415,10 @@ struct Person{
   int age;
   char *name;
 }
+
+struc Person person = {10, "John"};
+struc Person person = {.age=10, .name="John"}
+
 ```
 
 ## Typedef
@@ -456,3 +461,86 @@ Result Ok(int value)
     };
 }
 ```
+
+## Union
+
+- unions are used to create structures with mutually exclusive attributes. (when on is defined the other we dont care)
+
+```c
+union User{
+  int id;
+  int groupId;
+}
+```
+
+- The union variables will share the same memory space. The struct will be the length of the biggest attributes plus compiler defined padding
+
+- union in a struct can either be named or anonymous
+
+```c
+struct operator {
+    int type;
+    union {
+      int intNum;
+      float floatNum;
+      double doubleNum;
+    } types;
+};
+
+operator op;
+op.types.intNum = 10;
+
+```
+
+- when declared anonymously, the union variables will be accessible directly
+
+```c
+struct operator {
+    int type;
+    union {
+      int intNum;
+      float floatNum;
+      double doubleNum;
+    };
+};
+
+operator op;
+op.intNum = 10;
+```
+
+#### WHere are strings stored in C?
+
+- string literals are stored in the `data segment` of the program and are read only values
+
+```c
+char *s = "hello\0"; //can modify this string. Immutable
+char s[5] = "hello"; //this can be modified
+```
+
+## Command line arguments
+
+- `int argc` - argument count. The number of arguments passed to the program
+  - 0 is always the index command used to execute the program
+  - has n arguments + 1
+- `char *argv[]` (argument vector) - an array of character pointers to program arguments
+  - has always an extra value that contains a null pointer
+
+## Pointers to function
+
+why?
+
+- assign it in array
+- return a function from another function
+- pass it to a function
+
+```c
+int (*func) (int, int);
+void (*func) (void*, void*);
+
+int *f(); //function that returns a pointer to an int
+int (*f)(void); //pointer to a function that returns an int
+
+int (*pf)(); //pointer to a function that returns an int
+```
+
+- any pointer can be cast to a void pointer and vice versa without any data loss

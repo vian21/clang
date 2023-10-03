@@ -1,6 +1,6 @@
 all: compile run
 
-program:=functions.c
+program:=playground.c
 
 compile:
 	@cc ${program}
