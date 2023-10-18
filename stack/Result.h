@@ -1,30 +1,21 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-typedef struct Result
+typedef struct
 {
-    int is_ok;
+    unsigned short is_ok;
     union
     {
-        int value;
+        void *value;
         char *error;
     };
 
 } Result;
 
-static inline Result Ok(int value)
-{
-    return (Result){
-        .is_ok = 1,
-        .value = value
-        };
-}
+/* Returns an Result<Ok, NONE>*/
+Result Ok(void *value);
 
-static inline Result Err(char *error)
-{
-    return (Result){
-        .is_ok = 0,
-        .error = error};
-}
+/* Returns an Result<NONE, Err>*/
+Result Err(char *error);
 
 #endif

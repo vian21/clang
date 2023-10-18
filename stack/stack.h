@@ -5,36 +5,28 @@
 
 #define MAX_SIZE 100
 
-typedef enum Datatype
-{
-    INTERGER,
-    CHARACTER,
-    FLOAT,
-    DOUBLE,
-} Datatype;
-
 typedef struct Stack
 {
-    Datatype type;
+    size_t elemSize;
     int top;
     void *storage;
 } Stack;
 
-/* Create a new stack of type Datatype<Enum>*/
-Stack createStack(Datatype type);
+/* Initialises stack of type Datatype<Enum>*/
+void new_stack(Stack *s, size_t n, size_t elemSize);
 
 /*
  * inserts a value onto the stack
  * return 1 success | 0 error
  */
-int push(Stack *, int);
+int push(Stack *s, void *value);
 
 /*
  * removes a value from the stack
  */
-Result pop(Stack *);
+Result pop(Stack *stack);
 
 /* returns boolean */
-int is_empty(Stack *);
+int is_empty(Stack *s);
 
 #endif
