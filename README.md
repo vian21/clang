@@ -1,5 +1,11 @@
 # clang
 
+# Manpages
+
+- Section 1 of the man pages covers `command-line tools`
+- section 2 covers `system calls`
+- section 3 covers `user-space libraries`
+
 ### Headers
 
 - Headers define code to be included from other files
@@ -77,22 +83,28 @@ int list[10] =[];
 
 - `%d` - decimal integer
 - `%5d` - decimal integer of at least 5 characters wide
+- `u` - unsigned int
 
 - `%ld` - decimal long
 - `%5ld` - decimal long of at least 5 characters wide
 
 - `%o` - print an octal
-- `%x` - print a hexadecimal
+- `%x` | `%X` - print a hexadecimal
 
 - `%f` - float point number
 - `%5f` - float point number of at least 5 characters wide
 - `%.2f` - float point number of 2 characters after the decimal point
 - `%5.2f` - float point number of at 5 characters wide and 2 characters after the decimal point
 
-- `%c` - print a character
+- `E | e` - print double using standard form
+- `f` - print double using default precision (6)
+
+- `%c` - print a single character
 - `%s` - print a character string
 
 - `%%` - print the % sign
+
+- `%p` - print address of void pointer in hex
 
 ### Getting input and output
 
@@ -386,6 +398,7 @@ int add(int, int);
 - A pointer is a variable that contains the address of a variable
 - `&` - used to get the address of an object
 - `*` - used to deference a pointer and refer to the actually object being pointed to
+- Pointer addition is illegal but pointer subtraction is legal
 
 ```c
 int *ip;
@@ -409,6 +422,16 @@ y = *ip +1 ; //takes what ip points to, adds 1 and assigns it to y
 ## Struct
 
 - used to create a data structure i.e contiguous(consecutive) cells of memory bigger than the primitive sizes
+- comprised of a struct declaration `struct` and tag name
+- variables in a struct are called `members`
+
+```c
+struc tagName{
+  int member1;
+  char member2;
+}
+
+```
 
 ```c
 struct Person{
@@ -420,6 +443,83 @@ struc Person person = {10, "John"};
 struc Person person = {.age=10, .name="John"}
 
 ```
+
+- when struct declaration is followed by names, this will declare those as variables and set aside space for them
+- if not the struct declaration will only be template and no memory will be set aside
+
+```c
+struct vector2{int x,y;} root,vertex;
+
+root.x;
+root.y;
+```
+
+- The only legal operations on a struct are copying it or assign it to a unit
+- they may be returned from a function
+- they can be referenced by `&`
+- passed by value. A copy is made when passed to a function
+- It is illegal for a structure to contain an instance of itself. But it can contain a pointer to a member of its type
+- Pointers to structures are frequently used that there exist a shorthand
+
+```c
+struct Person person, *pp;
+
+pp = &person;
+
+printf("%s\n", (*pp).name);
+printf("%s\n", pp->name);
+
+```
+
+- if `pp` is pointer to a struct, then members of the struct can be accessed using `->`
+
+```c
+struct{
+  int len;
+  char *strl;
+}*p;
+
+++p->len; //increments len not p
+(++p)->len; //increments p
+p++->len; //access p->len and then increments p after
+```
+
+#### WHere are strings stored in C?
+
+- string literals are stored in the `data segment` of the program and are read only values
+
+```c
+char *s = "hello\0"; //can modify this string. Immutable
+char s[5] = "hello"; //this can be modified
+```
+
+## Command line arguments
+
+- `int argc` - argument count. The number of arguments passed to the program
+  - 0 is always the index command used to execute the program
+  - has n arguments + 1
+- `char *argv[]` (argument vector) - an array of character pointers to program arguments
+  - has always an extra value that contains a null pointer
+
+## Pointers to function
+
+why?
+
+- assign it in array
+- return a function from another function
+- pass it to a function
+
+```c
+int (*func) (int, int);
+void (*func) (void*, void*);
+
+int *f(); //function that returns a pointer to an int
+int (*f)(void); //pointer to a function that returns an int
+
+int (*pf)(); //pointer to a function that returns an int
+```
+
+- any pointer can be cast to a void pointer and vice versa without any data loss
 
 ## Typedef
 
@@ -443,6 +543,13 @@ typedef struct Person Person;
             (type)    (alias)
 ```
 
+```c
+//declares PersonPtr to be a pointer to a person struct
+typedef  struct Person *PersonPtr
+
+PersonPtr newPerson(void); //returns a person pointer. No need for *
+```
+
 ## Compound literals
 
 - used to construct unnamed objects
@@ -462,7 +569,7 @@ Result Ok(int value)
 }
 ```
 
-## Union
+## Unions
 
 - unions are used to create structures with mutually exclusive attributes. (when on is defined the other we dont care)
 
@@ -508,39 +615,175 @@ operator op;
 op.intNum = 10;
 ```
 
-#### WHere are strings stored in C?
+## compiler options
 
-- string literals are stored in the `data segment` of the program and are read only values
+- `Always compile your program with all warnings enabled`. NASA
+- `-Wall`: Enable every warning
+- `-Werror`: Convert warnings into errors
+- `-Wunused`: This flag enables warnings for unused variables, functions, and parameters.
+- `-Wformat`: It checks the arguments used in format strings for functions like printf and scanf to ensure they match the format string.
+- `-Wpedantic`: It issues warnings for code that doesn't adhere to the C standard strictly.
 
-```c
-char *s = "hello\0"; //can modify this string. Immutable
-char s[5] = "hello"; //this can be modified
+```sh
+gcc -Wall -Wextra -Werror -Wpedantic
 ```
 
-## Command line arguments
+## Make
 
-- `int argc` - argument count. The number of arguments passed to the program
-  - 0 is always the index command used to execute the program
-  - has n arguments + 1
-- `char *argv[]` (argument vector) - an array of character pointers to program arguments
-  - has always an extra value that contains a null pointer
+```makefile
+hey: one two
+	# Outputs "hey", since this is the target name
+	echo $@
 
-## Pointers to function
+	# Outputs all prerequisites newer than the target
+	echo $?
 
-why?
+	# Outputs all prerequisites
+	echo $^
 
-- assign it in array
-- return a function from another function
-- pass it to a function
+	touch hey
 
-```c
-int (*func) (int, int);
-void (*func) (void*, void*);
+one:
+	touch one
 
-int *f(); //function that returns a pointer to an int
-int (*f)(void); //pointer to a function that returns an int
+two:
+	touch two
 
-int (*pf)(); //pointer to a function that returns an int
+clean:
+	rm -f hey one two
 ```
 
-- any pointer can be cast to a void pointer and vice versa without any data loss
+## Bit-fields
+
+- used to declare a filed to contain one bit.
+- This simplifies the fact of having the need to do bitwise operations on numbers to get values
+
+```c
+struct {
+  unsigned in is_on: 1;
+  unsigned int power_mode:1;
+}
+```
+
+- This are used when you constrained in memory and need values to share the same byte word and not waste storage
+
+## Input & Output
+
+- C does not handle input and output
+- We have to used the standard library
+- `getchar`: gets the next character from the standard input. You need to test for `EOF` character
+
+- In linux, peripherals are represented as file. Everything is a file
+- When a program is executed by your shell. Three file descriptors are open:
+  1. std input: 0
+  2. std output: 1
+  3. std error: 2
+- `File descriptor`: int value that describes while file is open
+
+- C provides `two functions`(sys calls) to read and write data from the std input and output.
+
+```c
+int read_data = read(int fd, char* buf, int n_bytes);
+int write_data = write(int fd, char* buf, int n_bytes)
+
+```
+
+- `fd`: file descriptor
+- `char * buf`: buffer to be written to or to read from
+- `n_bytes`: the number of bytes to be transfered
+
+### Variable length argument list
+
+```c
+void minprintf(char* fmt, ...);
+```
+
+- `...` mean that the functions can take a varying number of parameters and types
+- it can only appear at the end of the function argumenet list
+
+- To step throught the argument list, use the `stdarg.h` library
+
+```c
+void minprintf(char* fmt, ...){
+  va_list ap;
+
+  va_start(ap, fmt); //initialize ap as an argument list pointer after fmt variable.
+
+}
+```
+
+- `ap`: argument pointer. Points to the first unamed argument
+
+```c
+va_arg(ap, int); //each call return the argument and steps ap to the next argument
+```
+
+- when done
+
+```c
+va_end(ap); ///clean up
+```
+
+## Scanf - Formatted input
+
+- returns the number os successful matched and assigned input items
+
+```c
+int scanf(char* fmt, ...);
+```
+
+- each input argument must be a pointer because scanf will try to write to them following the fmt string
+
+### sscanf
+
+- reads from a string not std input
+
+```c
+int sscanf(char* string, char *fmt, ....);
+```
+
+#### fmt argumentss
+
+- same as printf
+- `%f` - only indicates that the value is a float but not a double
+- To indicate the next argument is a double/long(8 bytes) use `l`(ell) before the format character i.e `%lf`
+- cant `scanf` with `char*`, you have to allocate memory for your string.
+- Either use `malloc` or `char []`
+- tabs, carriage return and special char are ignored
+
+- DISCLAIMER: Scanf can be overflowed when getting user input
+
+### fopen
+
+```c
+FILE fp;
+File fopen(char* name, char* mode)
+```
+
+- fopen will return NULL if there is an error
+- Good to close the file after use since most OS limit how many files can be open at the same time
+
+```c
+int fclose(FILE *fp);
+```
+
+## Error handling - stderr & exit
+
+- `exit(int code)`
+  - `0` : sucessfully
+  - `!=0`: with error
+- output to `stderr` will not be piped to a file if stdout is being redirected. It will only be shown on the screen and not be piped
+
+```c
+fprintf(FILE *fd, char *fmt, ... );
+fprintf(stderr, "Error occured in %s", filename);
+```
+
+## Line input & Output
+
+- `gets(char *s)` - NEVER USE. Does not check for buffer overflows
+- `puts(char *s)` - writes the string s and a trailing newline to stdout.
+- `fgets(char *s, int length, FILE *fp)`
+  - write length-1 chars from s to a file including
+  - Reading stops after an EOF or a newline. If a newline is reead, it is stored into the buffer. A terminating null byte (`\0`) is stored after the last character in the buffer.
+- `fputs(char *s, FILE *fp)` - writes  the  string  s to stream, without its terminating null byte (`\0`)
