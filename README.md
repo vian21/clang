@@ -786,4 +786,125 @@ fprintf(stderr, "Error occured in %s", filename);
 - `fgets(char *s, int length, FILE *fp)`
   - write length-1 chars from s to a file including
   - Reading stops after an EOF or a newline. If a newline is reead, it is stored into the buffer. A terminating null byte (`\0`) is stored after the last character in the buffer.
-- `fputs(char *s, FILE *fp)` - writes  the  string  s to stream, without its terminating null byte (`\0`)
+- `fputs(char *s, FILE *fp)` - writes the string s to stream, without its terminating null byte (`\0`)
+
+# Unix file system
+
+- In UNix/Linux, everything is a file i.e directories, devices
+
+- A directory: files that contains a list of filenames and where they are located
+- `inode`: is a file where all information about a file except its name is kept
+- A directory entry consists of a `filename` and `inode number`
+- Each open file is given a file descriptor. When you open a file, the kernel keeps track of all the opened files in `open files` entry table. It is an ID for that file for other process to stream it.
+
+## Malloc
+
+- malloc is used to request more heap memory
+- Each program is given a given amount of heap memory when executed
+- Memory blocks managed by malloc do not have to be contiguous. Each block contains:
+  - pointer to next block
+  - its size
+  - empty slot: pointer to this block is returned
+- malloc keeps track of these blocks in a free list(`circular linked list`). Each time it is caalled, it looks up in the free list and returns pointer to memory block being ceded. The memory block is removed from the free list
+- Malloc calls `morecore(nbytes)` which calls `sbrk(nbytes)` which is used request the memory from the OS
+- malloc is used to prevent calling `morecore` or `sbrk` everytime the program needs more memory. Requesting for memory is an expensive operation. Malloc helps by having a free list and uses already allocated memory.
+
+# Socket Programming
+
+- Socket programming allows nodes/process to talk to each other using sockets/file
+- Sockets are just files that are written to or read by two nodes that are in communication
+<center>
+<img src="https://scaler.com/topics/images/socket-programming.webp">
+</center>
+
+## Server
+
+- A server program goes through the following stages:
+
+### 1. Create socket
+
+```c
+int socket(int domain, int type, int protocol);
+```
+
+- `domain` represents the Address Family over which the communication will take place.
+  - `AF_LOCAL/AF_UNIX`: on the same computer. Interprocess
+  - `AF_INET/AF_INET6`: over internet domain
+  - `AF_BLUETOOTH`: using low-level bluetooth connection
+- `type`: type of connecition used in the socket
+  - `SOCK_STREAM`: using tcp stream. More reliable
+  - `SOCK_DGRAM`: using UDP packets
+- `protocol`:represents the protocol used in the socket. This is represented by a number. When there is only one protocol in the protocol family, the protocol number will be 0, or else the specific number for the protocol has to be specified.
+- returns a `socket descriptor`
+
+### 2. Set socket options
+
+```c
+int setsockopt(int socket_descriptor, int level, int option_name, const void *value_of_option, socklen_t option_length);
+
+if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &(1), sizeof(int))) {
+    perror("Couldn't set options");
+    exit(EXIT_FAILURE);
+}
+
+```
+
+- The level parameter can take the following values:
+
+- `SOL_SOCKET`: This is used for options that apply to the socket itself, such as SO_REUSEADDR or SO_KEEPALIVE.
+- `IPPROTO_TCP` or `IPPROTO_UDP`: These are used for options that apply to the TCP or UDP protocols, respectively.
+- `IPPROTO_IP`: This is used for options that apply to the IP protocol.
+
+### 3. Bind socket to port
+
+```c
+int bind(int socket_descriptor , const struct sockaddr *address, socklen_t length_of_address);
+
+/* example */
+struct sockaddr_in server_address;
+server_address.sin_family = AF_INET;
+server_address.sin_port = htons(SERVER_PORT);
+server_address.sin_addr.s_addr = INADDR_ANY;/* Address to accept any incoming messages.  */
+
+if (bind(socketd, (struct sockaddr *)&server_address, sizeof(server_address)))
+{
+    perror("Failed to bind address");
+}
+```
+
+### 4. Listen for incoming connections
+
+```c
+  int listen(int socket_descriptor, int back_log);
+```
+
+### 5. Accept/Handle incoming connection
+
+```c
+int accept(int socket_descriptor, struct sockaddr *restrict address, socklen_t *restrict length_of_address);
+```
+
+- Client goes through:
+
+### 1. Create socket
+
+### 2. Connect to server
+
+```c
+int connect(int socket_descriptor, const struct sockaddr *address, socklen_t length_of_address);
+```
+
+### 3. Write/read data
+
+```c
+// send message to the server
+ssize_t write(int __fd, const void *__buf, size_t __n);
+write(socket_descriptor, message, strlen(message));
+
+
+// receive a message from the server
+ssize_t read(int __fd, void *__buf, size_t __nbytes)
+read(socket_descriptor, recieve_buffer, 100);
+
+//->returns the number of bytes read or written to socket
+```

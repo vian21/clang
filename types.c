@@ -7,6 +7,7 @@ int main()
     static char* unitialisedString;
 
     int integer = 11;
+    int a = 0xf;
     unsigned int a =10000;
     long myLong = 10;
     float b = 10 / 3;

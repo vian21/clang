@@ -2,6 +2,11 @@
     "files.associations": {
         "stack.h": "c",
         "stdio.h": "c",
-        "result.h": "c"
+        "result.h": "c",
+        "in.h": "c",
+        "fcntl.h": "c",
+        "unistd.h": "c",
+        "headers.h": "c",
+        "stdlib.h": "c"
     }
 }
