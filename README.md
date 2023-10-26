@@ -810,6 +810,7 @@ fprintf(stderr, "Error occured in %s", filename);
 - malloc is used to prevent calling `morecore` or `sbrk` everytime the program needs more memory. Requesting for memory is an expensive operation. Malloc helps by having a free list and uses already allocated memory.
 
 # Socket Programming
+Source: https://www.scaler.com/topics/socket-programming-in-c/
 
 - Socket programming allows nodes/process to talk to each other using sockets/file
 - Sockets are just files that are written to or read by two nodes that are in communication
