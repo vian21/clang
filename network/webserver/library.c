@@ -1,9 +1,15 @@
 #include "library.h"
 #include "headers.h"
+#include <string.h>
 #include "time.h"
+#include <locale.h>
 
 char not_found_error[] = "<p>Page not found</p>\n";
 char server_error[] = "<p>Internal server error</p>\n";
+size_t n_requests = 0;
+char response_buffer[1024];
+char request[REQUEST_LEN];
+char time_buffer[20];
 
 int new_webserver(int port)
 {
@@ -73,8 +79,7 @@ char *read_page(char *file_name)
 }
 char *get_page(char *path)
 {
-
-    if (strcmp("/", path) == 0)
+    if (strcmp("/", path) == 0 || strcmp("/index.html", path) == 0)
     {
         return read_page("www/index.html");
     }
@@ -82,29 +87,37 @@ char *get_page(char *path)
     return NULL;
 }
 
+/**
+ * returns current system time string
+ * `Format`: 2023-10-26 19:53:14
+ *
+ */
 char *get_time()
 {
     time_t now = time(NULL);
-    struct tm tm_now;
-    char* buff = malloc(100);
+    struct tm *tm_local = localtime(&now);
 
-    localtime_r(&now, &tm_now);
-    strftime(buff, sizeof(buff), "%c", &tm_now);
+    strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %X", tm_local);
 
-    return buff;
+    return time_buffer;
 }
 
 void handle_request(char *request, char *response_buffer)
 {
+
     // tokenize
-    char *tokens = strtok(request, " ");
+    char *save_ptr = request; // pointer to be used in strtok_r to be thread safe. See: man strtok_r
+    char *tokens = strtok_r(save_ptr, " ", &save_ptr);
+
     char *request_type = tokens;
-    char *path = strtok(NULL, " ");
+    char *path = strtok_r(save_ptr, " ", &save_ptr);
 
-    (void)request_type;
+    if (path == NULL)
+        return;
 
-    char * time = get_time();
-    (void)printf("[LOG] %s %s \n", time, path);
+    char *time = get_time();
+
+    (void)printf("[LOG] Request ID: %ld Time:%s %s Path: %s\n", ++n_requests, time, request_type, path);
 
     char *body = get_page(path);
 
@@ -117,6 +130,34 @@ void handle_request(char *request, char *response_buffer)
     format_response(response_buffer, OK, path, body);
 
     free(body);
+}
+
+void *handle_connection_worker(void *client_sock)
+{
+    int client_socket = *(int *)client_sock;
+    free(client_sock);
+
+    handle_connection(client_socket);
+
+    return NULL;
+}
+
+void handle_connection(int client_socket)
+{
+    // get client request
+    int request_size = read(client_socket, request, REQUEST_LEN);
+
+    if (request_size < 0)
+    {
+        perror("Empty request");
+        return;
+    }
+
+    handle_request(request, response_buffer);
+
+    (void)write(client_socket, response_buffer, strlen(response_buffer));
+
+    (void)close(client_socket);
 }
 
 void error_page(Status_code code, char *response_buffer)

@@ -1,11 +1,13 @@
 #include "headers.h"
 #include "library.h"
+#include <pthread.h>
 
 #define SERVER_PORT 5000
+#define THREAD_MAX 128
 
 int main()
 {
-   int server_socket = new_webserver(SERVER_PORT);
+    int server_socket = new_webserver(SERVER_PORT);
 
     // accept connections
     struct sockaddr_in client_address;
@@ -14,26 +16,14 @@ int main()
 
     while ((client_socket = accept(server_socket, (struct sockaddr *)&client_address, (socklen_t *)&address_len)))
     {
-        // get client request
-        char request[REQUEST_LEN];
-        int request_size = read(client_socket, request, REQUEST_LEN);
+        /////////////////////single threaded////////////////////
+        handle_connection(client_socket);
 
-        if (request_size < 0)
-        {
-            perror("Empty request");
-            continue;
-        }
+        ////////////////////Multi-threaded///////////////////////
+        // pthread_t thread;
+        // int *client_s = malloc(sizeof(int));
+        // *client_s = client_socket;
 
-        char response_buffer[1024];
-
-        handle_request(request, response_buffer);
-
-        (void)write(client_socket, response_buffer, strlen(response_buffer));
-
-        (void)close(client_socket);
+        // pthread_create(&thread,NULL,handle_connection_worker, client_s);
     }
-
-    (void)close(server_socket);
-
-    exit(EXIT_SUCCESS);
 }

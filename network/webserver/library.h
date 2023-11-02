@@ -18,9 +18,17 @@ typedef enum Status_code
     SERVER_ERROR = 503
 } Status_code;
 
-// Create a new webserver socket
+/*
+ * - Create a new webserver socket
+ * - Quits the program if there is error while initialising the socket
+ *
+ * returns socket descriptor(int)
+ */
 int new_webserver(int port);
 
+/**
+ * close socket connection and exit program
+ */
 void close_exit(int);
 
 /*
@@ -32,10 +40,24 @@ void close_exit(int);
 void format_response(char *response_buffer, Status_code code, char *path, char *body);
 
 /*
- * Handles raw HTTP request
+ * Handles raw HTTP request and writes response to response buffer
  *
  */
 void handle_request(char *request, char *response_buffer);
 
+/**
+ * write error page to response buffer
+ */
 void error_page(Status_code code, char *response_buffer);
+
+/**
+ * Handle HTTP request given created client socket
+ */
+void handle_connection(int client_socket);
+
+/*
+ * handle client connection task (Thread)
+ */
+void *handle_connection_worker(void *client_socket);
+
 #endif

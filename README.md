@@ -810,6 +810,7 @@ fprintf(stderr, "Error occured in %s", filename);
 - malloc is used to prevent calling `morecore` or `sbrk` everytime the program needs more memory. Requesting for memory is an expensive operation. Malloc helps by having a free list and uses already allocated memory.
 
 # Socket Programming
+
 Source: https://www.scaler.com/topics/socket-programming-in-c/
 
 - Socket programming allows nodes/process to talk to each other using sockets/file
@@ -909,3 +910,47 @@ read(socket_descriptor, recieve_buffer, 100);
 
 //->returns the number of bytes read or written to socket
 ```
+
+# Multi-threading
+
+- `Critical section`: code that is run concurrently by multiple threads which access the same resources
+- The critical section must be executed as an `atomic operation`. only one thread can access the resource at time t.
+
+## pthreads - POSIX threads
+
+- ISO standrad to creat threads
+
+### phread_create()
+
+- create a thread assign it work
+
+```c
+int pthread_create(pthread_t *thread,
+                          const pthread_attr_t * attr,
+                          void *(*start_routine)(void *),
+                          void *arg);
+```
+
+```c
+pthread_t thread;
+
+pthread_create(&thread, NULL, execute_work, &args )
+
+void *execute_work(void *args){
+  ...
+  return NULL;
+}
+```
+
+- `int pthread_join(pthread_t thread, void **retval)`: wait until thread is done
+- `int pthread_mutex_lock(pthread_mutex_t *mutex)`: The mutex object referenced by mutex shall be locked by a call to pthread_mutex_lock() that returns zero or [EOWNERDEAD]. If the mutex is already locked by another thread, the calling thread shall block until the mutex becomes available.
+
+## Semaphores
+Source: https://en.wikipedia.org/wiki/Semaphore_(programming)
+- A semaphore is a variable that is shared by all threads and is used to solve the crtical section proble. It is used for process synchronization
+- Has 2 operations
+  1. `wait(P)`: decrement semaphore
+  2. `signal(V)`: increment semaphore to indicate availability
+- Semaphores are used to keep track of how many users can access a resource at the same time(login analogy) or if a resource is available or not
+- Most used algorithm is `pass the baton` where after a resource is done and signal(V), it calls up th next thread
+- Most OS provide primitives to create semaphores and avoid threads reading the value of the semaphore multiple times.

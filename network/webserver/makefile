@@ -1,5 +1,7 @@
 FLAGS:=-Wall -Werror -Wpedantic
+
 all: webserver run
+
 webserver: main.c library.o
 	gcc ${FLAGS} $^ -o $@
 	
