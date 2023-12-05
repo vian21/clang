@@ -15,5 +15,8 @@ ${BUILD_DIR}stack.o: stack.c
 	gcc -c ${FLAGS} $^ -o $@
 
 clean:
+	@echo "Deleting executables"
+	find . -maxdepth 1 -type f -executable -delete
+
 	@echo "removing build artifacts"
 	@rm ${BUILD_DIR}*
